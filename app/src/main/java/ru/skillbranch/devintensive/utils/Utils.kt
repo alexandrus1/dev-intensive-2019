@@ -1,5 +1,7 @@
 package ru.skillbranch.devintensive.utils
 
+import java.lang.StringBuilder
+
 object Utils {
     fun parseFullName(fullName: String?): Pair<String?, String?> {
         var list = fullName?.split(" ")
@@ -12,12 +14,65 @@ object Utils {
     }
 
     fun transliteration(fullName: String, divider: String = " "): String {
-        TODO("not implemented")
+        fullName.replace(" ", divider)
+        var string = StringBuilder()
+        fullName.forEach {
+            var char = when(it.toString().toLowerCase()) {
+                "а"-> "a"
+                "б"-> "b"
+                "в"-> "v"
+                "г"-> "g"
+                "д"-> "d"
+                "е"-> "e"
+                "ё"-> "e"
+                "ж"-> "zh"
+                "з"-> "z"
+                "и"-> "i"
+                "й"-> "i"
+                "к"-> "k"
+                "л"-> "l"
+                "м"-> "m"
+                "н"-> "n"
+                "о"-> "o"
+                "п"-> "p"
+                "р"-> "r"
+                "с"-> "s"
+                "т"-> "t"
+                "у"-> "u"
+                "ф"-> "f"
+                "х"-> "h"
+                "ц"-> "c"
+                "ч"-> "ch"
+                "ш"-> "sh"
+                "щ"-> "sh'"
+                "ъ"-> ""
+                "ы"-> "i"
+                "ь"-> ""
+                "э"-> "e"
+                "ю"-> "yu"
+                "я"-> "ya"
+                " "-> divider
+                else -> it
+            }
+            if (it.isUpperCase())
+                char = char.toString().capitalize()
+            string.append(char.toString())
+        }
+        return string.toString()
     }
 
     fun toInitials(firstName: String?, lastName: String?): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        var char1 = firstName?.trim()?.getOrNull(0)?.toTitleCase()
+        var char2 = lastName?.trim()?.getOrNull(0)?.toTitleCase()
+
+        var sb = StringBuilder();
+        if (char1 != null) sb.append(char1)
+        if (char2 != null) sb.append(char2)
+
+        var result = sb.toString()
+        if (result == "")
+            result = null.toString()
+
+        return result
     }
-
-
 }
