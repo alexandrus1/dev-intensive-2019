@@ -69,9 +69,9 @@ object Utils {
         if (char1 != null) sb.append(char1)
         if (char2 != null) sb.append(char2)
 
-        var result = sb.toString()
+        var result : String? = sb.toString()
         if (result == "")
-            result = null.toString()
+            result = null
 
         return result
     }
