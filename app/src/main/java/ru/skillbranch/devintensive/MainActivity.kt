@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         // benderImage = findViewById(R.id.iv_bender)
         benderImage = iv_bender
         textTxt = tv_text
-        messageEt = et_messages
+        messageEt = et_message
         sendBtn = iv_send
 
         // EditText - allow soft keyboard button
