@@ -1,6 +1,7 @@
 package ru.skillbranch.devintensive.utils
 
 import java.lang.StringBuilder
+import android.content.Context
 
 object Utils {
     fun parseFullName(fullName: String?): Pair<String?, String?> {
@@ -74,5 +75,19 @@ object Utils {
             result = null
 
         return result
+    }
+
+    fun convertPxToDp(context: Context, px: Int): Int {
+        val scale = context.resources.displayMetrics.density
+        return (px / scale + 0.5f).toInt()
+    }
+
+    fun convertDpToPx(context: Context, dp: Int): Int {
+        val scale = context.resources.displayMetrics.density
+        return (dp * scale + 0.5f).toInt()
+    }
+
+    fun convertSpToPx(context: Context, sp: Int): Int {
+        return sp * context.resources.displayMetrics.scaledDensity.toInt()
     }
 }
