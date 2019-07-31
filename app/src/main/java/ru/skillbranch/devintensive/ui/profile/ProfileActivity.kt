@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.activity_profile.*
 
 import ru.skillbranch.devintensive.R
 import ru.skillbranch.devintensive.models.Profile
+import ru.skillbranch.devintensive.utils.Utils
 import ru.skillbranch.devintensive.viewmodels.ProfileViewModel
 
 class ProfileActivity : AppCompatActivity() {
@@ -64,6 +65,7 @@ class ProfileActivity : AppCompatActivity() {
                 v.text = it[k].toString()
             }
         }
+        updateAvatar(profile)
         Log.d("M_ProfileActivity", "updateUI")
     }
 
@@ -93,12 +95,8 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         et_repository.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
+            override fun afterTextChanged(s: Editable?) { }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 if (!validateURL(s)) {
                     wr_repository.isErrorEnabled = true
@@ -175,4 +173,10 @@ class ProfileActivity : AppCompatActivity() {
         val pattern = Regex("""^(https://)?(www\.)?github\.com/(?!($wrongNames)/?$)[\-\w]+/?$""")
         return url.isNullOrBlank() || pattern.matches(url)
     }
+
+    private fun updateAvatar(profile: Profile){
+        val initials = Utils.toInitials(profile.firstName, profile.lastName)
+        iv_avatar.generateAvatar(initials, Utils.convertSpToPx(this, 48), theme)
+    }
+
 }

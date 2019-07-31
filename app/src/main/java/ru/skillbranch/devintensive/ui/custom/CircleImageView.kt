@@ -1,9 +1,12 @@
 package ru.skillbranch.devintensive.ui.custom
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.util.AttributeSet
+import android.util.Log
+import android.util.TypedValue
 import android.widget.ImageView
 import androidx.annotation.ColorRes
 import androidx.annotation.Dimension
@@ -28,12 +31,14 @@ class CircleImageView @JvmOverloads constructor(
     // variables
     private var borderColor = DEFAULT_BORDER_COLOR
     private var borderWidth = Utils.convertDpToPx(context, DEFAULT_BORDER_WIDTH)
+    private var text: String? = null
+    private var bitmap: Bitmap? = null
 
     // declare init block
     init {
         if (attrs != null) {
             val a = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
-            borderColor = a.getInt(R.styleable.CircleImageView_cv_borderColor, CircleImageView.DEFAULT_BORDER_COLOR)
+            borderColor = a.getInt(R.styleable.CircleImageView_cv_borderColor, DEFAULT_BORDER_COLOR)
             borderWidth = a.getDimensionPixelSize(
                 R.styleable.CircleImageView_cv_borderWidth,
                 Utils.convertDpToPx(context, DEFAULT_BORDER_WIDTH)
@@ -53,24 +58,95 @@ class CircleImageView @JvmOverloads constructor(
         borderColor = Color.parseColor(hex)
         this.invalidate()
     }
+
     fun setBorderColor(@ColorRes colorId: Int) {
         borderColor = ContextCompat.getColor(App.applicationContext(), colorId)
         this.invalidate()
     }
 
     override fun onDraw(canvas: Canvas) {
-        val bitmap = getBitmapFromDrawable() ?: return
+        var bitmap = getBitmapFromDrawable() ?: return
         if (width == 0 || height == 0) return
 
-        val scaledBmp = getScaledBitmap(bitmap, width)
-        val croppedBmp = getCenterCroppedBitmap(scaledBmp, width)
-        val circleBmp = getCircleBitmap(croppedBmp)
-        val strokedBmp = getStrokedBitmap(circleBmp, borderWidth, borderColor)
+        bitmap = getScaledBitmap(bitmap, width)
+        bitmap = getCenterCroppedBitmap(bitmap, width)
+        bitmap = getCircleBitmap(bitmap)
 
-        canvas.drawBitmap(strokedBmp, 0F, 0F, null)
+        if (borderWidth > 0)
+            bitmap = getStrokedBitmap(bitmap, borderWidth, borderColor)
+
+        canvas.drawBitmap(bitmap, 0F, 0F, null)
+    }
+
+    fun generateAvatar(text: String?, sizeSp: Int, theme: Resources.Theme) {
+        // don't render if initials haven't changed
+        Log.d("M_CircleImageView", "generateAvatar: Text is {$text}")
+        if (bitmap == null || text != this.text) {
+            val image =
+                if (text.isNullOrEmpty()) generateDefAvatar(theme)
+                else generateLetterAvatar(text, sizeSp, theme)
+
+            this.text = text
+            bitmap = image
+            invalidate()
+        }
+    }
+
+    private fun generateLetterAvatar(text: String, sizeSp: Int, theme: Resources.Theme): Bitmap {
+        val image = generateDefAvatar(theme)
+
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        paint.textSize = sizeSp.toFloat()
+        paint.color = Color.WHITE
+        paint.textAlign = Paint.Align.CENTER
+
+        val textBounds = Rect()
+        paint.getTextBounds(text, 0, text.length, textBounds)
+
+        val backgroundBounds = RectF()
+        backgroundBounds.set(0f, 0f, layoutParams.height.toFloat(), layoutParams.height.toFloat())
+
+        val textBottom = backgroundBounds.centerY() - textBounds.exactCenterY()
+        val canvas = Canvas(image)
+        canvas.drawText(text, backgroundBounds.centerX(), textBottom, paint)
+
+        return image
+    }
+
+    private fun generateDefAvatar(theme: Resources.Theme): Bitmap {
+        Log.d("M_CircleImageView", "generateDefAvatar")
+        val image = Bitmap.createBitmap(layoutParams.height, layoutParams.height, Bitmap.Config.ARGB_8888)
+        val color = TypedValue()
+        theme.resolveAttribute(R.attr.colorAccent, color, true)
+
+        val canvas = Canvas(image)
+        canvas.drawColor(color.data)
+
+        return image
+    }
+
+    private fun getStrokedBitmap(squareBmp: Bitmap, strokeWidth: Int, color: Int): Bitmap {
+        val inCircle = RectF()
+        val strokeStart = strokeWidth / 2F
+        val strokeEnd = squareBmp.width - strokeWidth / 2F
+
+        inCircle.set(strokeStart, strokeStart, strokeEnd, strokeEnd)
+
+        val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        strokePaint.color = color
+        strokePaint.style = Paint.Style.STROKE
+        strokePaint.strokeWidth = strokeWidth.toFloat()
+
+        val canvas = Canvas(squareBmp)
+        canvas.drawOval(inCircle, strokePaint)
+
+        return squareBmp
     }
 
     private fun getBitmapFromDrawable(): Bitmap? {
+        if (bitmap != null)
+            return bitmap
+
         if (drawable == null)
             return null
 
@@ -99,6 +175,7 @@ class CircleImageView @JvmOverloads constructor(
             Bitmap.createScaledBitmap(bitmap, (bitmap.width / factor).toInt(), (bitmap.height / factor).toInt(), false)
         } else bitmap
     }
+
     private fun getCircleBitmap(bitmap: Bitmap): Bitmap {
         val smallest = min(bitmap.width, bitmap.height)
         val outputBmp = Bitmap.createBitmap(smallest, smallest, Bitmap.Config.ARGB_8888)
@@ -117,23 +194,6 @@ class CircleImageView @JvmOverloads constructor(
         canvas.drawBitmap(bitmap, rect, rect, paint)
 
         return outputBmp
-    }
-    private fun getStrokedBitmap(squareBmp: Bitmap, strokeWidth: Int, color: Int): Bitmap {
-        val inCircle = RectF()
-        val strokeStart = strokeWidth / 2F
-        val strokeEnd = squareBmp.width - strokeWidth / 2F
-
-        inCircle.set(strokeStart , strokeStart, strokeEnd, strokeEnd)
-
-        val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        strokePaint.color = color
-        strokePaint.style = Paint.Style.STROKE
-        strokePaint.strokeWidth = strokeWidth.toFloat()
-
-        val canvas = Canvas(squareBmp)
-        canvas.drawOval(inCircle, strokePaint)
-
-        return squareBmp
     }
 }
 
