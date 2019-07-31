@@ -1,16 +1,17 @@
 package ru.skillbranch.devintensive.ui.profile
 
-import android.graphics.ColorFilter
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
+import android.graphics.*
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.activity_profile.*
@@ -18,6 +19,8 @@ import kotlinx.android.synthetic.main.activity_profile.*
 import ru.skillbranch.devintensive.R
 import ru.skillbranch.devintensive.models.Profile
 import ru.skillbranch.devintensive.utils.Utils
+import ru.skillbranch.devintensive.utils.Utils.convertSpToPx
+import ru.skillbranch.devintensive.utils.Utils.toInitials
 import ru.skillbranch.devintensive.viewmodels.ProfileViewModel
 
 class ProfileActivity : AppCompatActivity() {
@@ -65,7 +68,14 @@ class ProfileActivity : AppCompatActivity() {
                 v.text = it[k].toString()
             }
         }
-        updateAvatar(profile)
+        val firstName = et_first_name.text.toString()
+        val lastName = et_last_name.text.toString()
+
+        if (firstName.isNotBlank() || lastName.isNotBlank()) {
+            iv_avatar.setImageDrawable(getLetterTile(firstName, lastName))
+        } else {
+            iv_avatar.setImageResource(R.drawable.avatar_default)
+        }
         Log.d("M_ProfileActivity", "updateUI")
     }
 
@@ -174,9 +184,42 @@ class ProfileActivity : AppCompatActivity() {
         return url.isNullOrBlank() || pattern.matches(url)
     }
 
-    private fun updateAvatar(profile: Profile){
-        val initials = Utils.toInitials(profile.firstName, profile.lastName)
-        iv_avatar.generateAvatar(initials, Utils.convertSpToPx(this, 48), theme)
+    private fun getColorAccent(): Int {
+        val typedValue = TypedValue()
+        theme.resolveAttribute(R.attr.colorAccent, typedValue, true)
+        return typedValue.data
+    }
+
+    private fun getLetterTile(firstName: String, lastName: String): Drawable {
+        val width = resources.getDimensionPixelSize(R.dimen.avatar_round_size)
+        val height = resources.getDimensionPixelSize(R.dimen.avatar_round_size)
+        Log.d("M_ProfileActivity", "$width $height")
+
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val initials = toInitials(firstName, lastName)
+
+        val bounds = Rect()
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        val c = Canvas()
+        c.setBitmap(bitmap)
+
+        val halfWidth = (width / 2).toFloat()
+        val halfHeight = (height / 2).toFloat()
+        paint.style = Paint.Style.FILL
+        paint.color = getColorAccent()
+        c.drawCircle(halfWidth, halfHeight, halfWidth, paint)
+
+        Log.d("M_ProfileActivity", "getLetterTile")
+        paint.textSize = Utils.convertSpToPx(this, 52.0f)
+        paint.color = resources.getColor(android.R.color.white, theme)
+        paint.getTextBounds(initials, 0, initials!!.length, bounds)
+        c.drawText(
+            initials.toString(),
+            halfWidth - paint.measureText(initials) / 2,
+            halfHeight + bounds.height() / 2,
+            paint
+        )
+        return bitmap.toDrawable(resources)
     }
 
 }

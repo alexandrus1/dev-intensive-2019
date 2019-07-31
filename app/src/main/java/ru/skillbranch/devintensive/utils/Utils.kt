@@ -2,6 +2,7 @@ package ru.skillbranch.devintensive.utils
 
 import java.lang.StringBuilder
 import android.content.Context
+import android.util.TypedValue
 
 object Utils {
     fun parseFullName(fullName: String?): Pair<String?, String?> {
@@ -89,5 +90,9 @@ object Utils {
 
     fun convertSpToPx(context: Context, sp: Int): Int {
         return sp * context.resources.displayMetrics.scaledDensity.toInt()
+    }
+
+    fun convertSpToPx(context: Context, sp: Float): Float {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.resources.displayMetrics)
     }
 }
