@@ -1,6 +1,7 @@
 package ru.skillbranch.devintensive.extensions
 
 import ru.skillbranch.devintensive.models.*
+import ru.skillbranch.devintensive.models.data.User
 import ru.skillbranch.devintensive.utils.*
 
 fun User.toUserView(): UserView {
@@ -20,4 +21,7 @@ fun User.toUserView(): UserView {
         status = status
     )
 }
+
+fun User.fullName() = "$firstName $lastName"
+
 
