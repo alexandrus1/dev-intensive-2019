@@ -6,7 +6,6 @@ import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-
 import ru.skillbranch.devintensive.R
 import ru.skillbranch.devintensive.models.data.ChatItem
 import ru.skillbranch.devintensive.utils.Utils
@@ -47,7 +46,7 @@ class ChatItemTouchHelperCallback(
         if (actionState != ItemTouchHelper.ACTION_STATE_IDLE && viewHolder is ItemTouchViewHolder) {
             viewHolder.onItemSelected()
         }
-            super.onSelectedChanged(viewHolder, actionState)
+        super.onSelectedChanged(viewHolder, actionState)
     }
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
@@ -64,7 +63,7 @@ class ChatItemTouchHelperCallback(
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
-        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE){
+        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
             val itemView = viewHolder.itemView
             drawBackground(canvas, itemView, dX)
             drawIcon(canvas, itemView, dX)

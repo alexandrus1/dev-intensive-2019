@@ -14,13 +14,13 @@ object CacheManager {
         return chats
     }
 
-    fun findUsersByIds(ids: List<String>): List<User> {
+    fun findUserByIds(ids: List<String>): List<User> {
         return users.value!!.filter { ids.contains(it.id) }
     }
 
     fun nextChatId(): String {
         // return "${chats.value!!.size}"
-        // Идентификатор нового чата должен задаваться как инкремент от последнего идентификатора в списке чатов
+        // РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РЅРѕРІРѕРіРѕ С‡Р°С‚Р° РґРѕР»Р¶РµРЅ Р·Р°РґР°РІР°С‚СЊСЃСЏ РєР°Рє РёРЅРєСЂРµРјРµРЅС‚ РѕС‚ РїРѕСЃР»РµРґРЅРµРіРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂР° РІ СЃРїРёСЃРєРµ С‡Р°С‚РѕРІ
         val lastId = chats.value!!.last().id.toInt() + 1
         return lastId.toString()
     }

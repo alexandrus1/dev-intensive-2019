@@ -1,104 +1,77 @@
 package ru.skillbranch.devintensive.extensions
 
+import java.lang.Math.abs
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.regex.Pattern
-import kotlin.math.absoluteValue
+import ru.skillbranch.devintensive.extensions.TimeUnits.*
 
-const val SECOND = 1000L
-const val MINUTE = 60 * SECOND
-const val HOUR = 60 * MINUTE
-const val DAY = 24 * HOUR
-
-enum class TimeUnits {
-    SECOND, MINUTE, HOUR, DAY
+fun Date.format(pattern: String = "HH:mm:ss dd.MM.yy"): String {
+    val dateFormat = SimpleDateFormat(pattern, Locale("ru"))
+    return dateFormat.format(this)
 }
 
 fun Date.shortFormat(): String {
     val pattern = if (this.isSameDay(Date())) "HH:mm" else "dd.MM.yy"
-    return SimpleDateFormat(pattern, Locale("ru")).format(this)
+    val dateFormat = SimpleDateFormat(pattern, Locale("ru"))
+    return dateFormat.format(this)
 }
 
-private fun Date.isSameDay(otherDate: Date): Boolean = (this.time / DAY) == (otherDate.time / DAY)
+fun Date.isSameDay(date: Date): Boolean {
+    val day1 = this.time / TimeUnits.DAY.value
+    val day2 = date.time / TimeUnits.DAY.value
+    return day1 == day2
+}
 
-fun Date.add(value: Int, units: TimeUnits = TimeUnits.SECOND): Date {
-    var time = this.time
-    time += when (units) {
-        TimeUnits.SECOND -> value * SECOND
-        TimeUnits.MINUTE -> value * MINUTE
-        TimeUnits.HOUR -> value * HOUR
-        TimeUnits.DAY -> value * DAY
-    }
-    this.time = time
+fun Date.add(value: Int, units: TimeUnits = SECOND): Date {
+    this.time += units.value * value
     return this
+}
+
+fun getUnitForm(value: Int, unit: TimeUnits): String {
+
+    val triple = when (unit) {
+        SECOND -> Triple("секунд", "секунду", "секунды")
+        MINUTE -> Triple("минут", "минуту", "минуты")
+        HOUR -> Triple("часов", "час", "часа")
+        DAY -> Triple("дней", "день", "дня")
+    }
+
+    // 21-24 час(а), 31-34 час(а), но 11-14 часов
+    val i = value % 100
+    return when (i) {
+        0, in 5..19 -> triple.first
+        1 -> triple.second
+        in 2..4 -> triple.third
+        else -> getUnitForm(i % 10, unit)
+    }
+}
+
+enum class TimeUnits(val value: Long) {
+    SECOND(1000L),
+    MINUTE(60 * SECOND.value),
+    HOUR(60 * MINUTE.value),
+    DAY(24 * HOUR.value);
+
+    fun plural(value: Int) = "$value ${getUnitForm(value, this)}"
+}
+
+fun getTenseForm(interval: String, isPast: Boolean): String {
+    return if (isPast) "$interval назад" else "через $interval"
 }
 
 fun Date.humanizeDiff(date: Date = Date()): String {
-    val diff = (date.getTime() - this.getTime())
-    if (diff >= 0) {
-        if (diff <= 1 * SECOND) return "только что"
-        else if (diff <= 45 * SECOND) return "несколько секунд назад"
-        else if (diff <= 75 * SECOND) return "минуту назад"
-        else if (diff <= 45 * MINUTE) {
-            val value: Long = diff / MINUTE
-            val sb = StringBuilder()
-            return sb.humanizeDiff(value, "", " назад", "минуту", "минуты", "минут").toString()
-        } else if (diff <= 75 * MINUTE) return "час назад"
-        else if (diff <= 22 * HOUR) {
-            val value: Long = diff / HOUR
-            val sb = StringBuilder()
-            return sb.humanizeDiff(value, "", " назад", "час", "часа", "часов").toString()
-        } else if (diff <= 26 * HOUR) return "день назад"
-        else if (diff <= 360 * DAY) {
-            val value: Long = diff / DAY
-            val sb = StringBuilder()
-            return sb.humanizeDiff(value, "", " назад", "день", "дня", "дней").toString()
-        } else if (diff > 360 * DAY) return "более года назад"
-    } else {                // future
-        if (diff >= -1 * SECOND) return "только что"
-        else if (diff >= -45 * SECOND) return "через несколько секунд"
-        else if (diff >= -75 * SECOND) return "через минуту"
-        else if (diff >= -45 * MINUTE) {
-            val value: Long = diff / MINUTE
-            val sb = StringBuilder()
-            return sb.humanizeDiff(value, "через ", "", "минуту", "минуты", "минут").toString()
-        } else if (diff >= -75 * MINUTE) return "через час"
-        else if (diff >= -22 * HOUR) {
-            val value: Long = diff / HOUR
-            val sb = StringBuilder()
-            return sb.humanizeDiff(value, "через ", "", "час", "часа", "часов").toString()
-        } else if (diff >= -26 * HOUR) return "через день"
-        else if (diff >= -360 * DAY) {
-            val value: Long = diff / DAY
-            val sb = StringBuilder()
-            return sb.humanizeDiff(value, "через ", "", "день", "дня", "дней").toString()
-        } else if (diff < -360 * DAY) return "более чем через год"
+    val isPast = this.time < date.time
+    val diff = abs(date.time - this.time)
+
+    return when {
+        diff <= SECOND.value -> "только что"
+        diff <= 45 * SECOND.value -> getTenseForm("несколько секунд", isPast)
+        diff <= 75 * SECOND.value -> getTenseForm("минуту", isPast)
+        diff <= 45 * MINUTE.value -> getTenseForm(MINUTE.plural((diff / MINUTE.value).toInt()), isPast)
+        diff <= 75 * MINUTE.value -> getTenseForm("час", isPast)
+        diff <= 22 * HOUR.value -> getTenseForm(HOUR.plural((diff / HOUR.value).toInt()), isPast)
+        diff <= 26 * HOUR.value -> getTenseForm("день", isPast)
+        diff <= 360 * DAY.value -> getTenseForm(DAY.plural((diff / DAY.value).toInt()), isPast)
+        else -> if (isPast) "более года назад" else "более чем через год"
     }
-
-
-    return ""
-}
-
-fun StringBuilder.humanizeDiff(
-    valueIn: Long,
-    textBefore: String,
-    textAfter: String,
-    text1: String,
-    text234: String,
-    textOther: String
-): StringBuilder {
-    val value = valueIn.absoluteValue
-    val reminder1 = value % 100
-    val reminder = value % 10
-    this.append(textBefore)
-    this.append(value.toString()).append(" ")
-
-    if (reminder1 >= 11L && reminder1 <= 19L) this.append(textOther)
-    else if (reminder == 1L) this.append(text1)
-    else if (reminder == 2L || reminder == 3L || reminder == 4L) this.append(text234)
-    else this.append(textOther)
-
-    this.append(textAfter)
-
-    return this
 }

@@ -1,9 +1,8 @@
 package ru.skillbranch.devintensive.models.data
 
+import ru.skillbranch.devintensive.extensions.humanizeDiff
+import ru.skillbranch.devintensive.utils.Utils
 import java.util.*
-
-import ru.skillbranch.devintensive.utils.*
-import ru.skillbranch.devintensive.extensions.*
 
 data class User(
     val id: String,
@@ -37,10 +36,9 @@ data class User(
         id = id,
         firstName = firstName,
         lastName = lastName,
-        avatar = null
-    )
+        avatar = null)
 
-    constructor(id: String) : this(id, "John", "Doe")
+    constructor(id: String) : this (id, "John", "Doe")
 
     companion object Factory {
         private var lastId: Int = -1
@@ -49,7 +47,7 @@ data class User(
 
             val (firstName, lastName) = Utils.parseFullName(fullName)
             return User(
-                id = "$lastId",
+                "$lastId",
                 firstName = firstName,
                 lastName = lastName
             )

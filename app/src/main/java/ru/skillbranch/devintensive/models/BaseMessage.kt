@@ -4,9 +4,6 @@ import ru.skillbranch.devintensive.models.data.Chat
 import ru.skillbranch.devintensive.models.data.User
 import java.util.*
 
-/**
- * Created by Makweb on 24.06.2019.
- */
 abstract class BaseMessage(
     val id: String,
     val from: User,
@@ -15,6 +12,7 @@ abstract class BaseMessage(
     val date: Date = Date(),
     var isReaded: Boolean = false
 ) {
+
     abstract fun formatMessage(): String
     abstract fun shortMessage(): String
 
@@ -43,7 +41,8 @@ abstract class BaseMessage(
                     date = date,
                     text = payload as String,
                     isIncoming = isIncoming
-)                else -> if ("image" == payload || "fullName" == payload) makeMessage(from, chat, date, payload, type, isIncoming)
+                )
+                else -> if ("image" == payload || "fullName" == payload) makeMessage(from, chat, date, payload, type, isIncoming)
                         else throw IllegalArgumentException()
             }
         }

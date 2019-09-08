@@ -2,28 +2,33 @@ package ru.skillbranch.devintensive
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import ru.skillbranch.devintensive.repositories.PreferencesRepository
 
-class App: Application(){
+class App: Application() {
     companion object {
         private var instance: App? = null
 
         fun applicationContext(): Context {
             return instance!!.applicationContext
         }
+
+        // с контент-провайдерами не всё так тривиально: метод OnCreate вызывается не совсем самым первым
+        // есть ситуации, когда вы можете обратиться к приложению и не получить из него контекст
+        // это бывает крайне редко, но стоит об этом знать
     }
 
     init {
         instance = this
     }
 
-    // ATTN:
-    // onCreate is not always the first method to be called
     override fun onCreate() {
         super.onCreate()
         PreferencesRepository.getAppTheme().also {
-            AppCompatDelegate.setDefaultNightMode(it)
+            Log.d("M_App","OnCreate")
+            AppCompatDelegate.setDefaultNightMode(it) // MODE_NIGHT_YES
         }
     }
 }

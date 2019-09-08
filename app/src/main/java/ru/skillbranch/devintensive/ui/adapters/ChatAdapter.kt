@@ -12,7 +12,6 @@ import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.item_chat_archive.*
 import kotlinx.android.synthetic.main.item_chat_group.*
 import kotlinx.android.synthetic.main.item_chat_single.*
-
 import ru.skillbranch.devintensive.R
 import ru.skillbranch.devintensive.models.data.ChatItem
 import ru.skillbranch.devintensive.models.data.ChatType
@@ -51,8 +50,8 @@ class ChatAdapter(val listener: (ChatItem, Int) -> Unit) : RecyclerView.Adapter<
 
     fun updateData(data: List<ChatItem>) {
         Log.d(
-            "M_ChatAdapter", "update data adapter - new data ${data.size} hash: ${data.hashCode()} " +
-                    "old data ${items.size} hash: ${items.hashCode()}"
+            "M_ChatAdapter", "update data adapter - new data ${data.size} hash: ${data.hashCode()}" +
+                    " old data ${items.size} hash: ${items.hashCode()}"
         )
 
         val diffCallback = object : DiffUtil.Callback() {
@@ -94,7 +93,8 @@ class ChatAdapter(val listener: (ChatItem, Int) -> Unit) : RecyclerView.Adapter<
         }
 
         override fun bind(item: ChatItem, pos: Int, listener: (ChatItem, Int) -> Unit) {
-            // Нельзя обращаться к вью через itemView! itemView.tv_title_single.text ...
+            // Нельзя обращаться к вь
+            // ю через itemView! itemView.tv_title_single.text ...
             // убивает производительность, т.к. вьюхи не кэшируются, а ищутся каждый раз заново
             // решается с помощью реализации холдером LayoutContainer
             if (item.avatar == null) {

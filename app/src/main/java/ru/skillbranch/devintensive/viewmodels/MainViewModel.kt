@@ -1,52 +1,52 @@
 package ru.skillbranch.devintensive.viewmodels
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import ru.skillbranch.devintensive.extensions.mutableLiveData
+import ru.skillbranch.devintensive.models.data.Chat
 import ru.skillbranch.devintensive.models.data.ChatItem
-import ru.skillbranch.devintensive.models.data.ChatType
 import ru.skillbranch.devintensive.repositories.ChatRepository
 
 class MainViewModel : ViewModel() {
     private val query = mutableLiveData("")
     private val chatRepository = ChatRepository
+    // если LiveData, которая хранится в chatRepository будет изменена,
+    // то и LiveData, которая будет эмиттиться этим полем (chats) тоже будет изменена
+    // вызывая Transformations.map мы неявным образом подписываемся на изменения источника
+    // не используйте методы observe внутри view модели - нужно использовать либо Transformations, либо MediatorData
 
-    private val nonArchiveChats = Transformations.map(chatRepository.loadChats()) { chats ->
-        return@map chats.filter { !it.isArchived }.map { it.toChatItem() }.sortedBy { it.id.toInt() }
-    }
-
-    private val archiveChats = Transformations.map(chatRepository.loadChats()) { chats ->
-        return@map chats.filter { it.isArchived }.map { it.toChatItem() }
-    }
+    private val chats = chatRepository.loadChats()
+    // Transformations.map(chatRepository.loadChats()) { chats ->
+    //     return@map chats.filter { !it.isArchived }
+    //         .map { it.toChatItem() }
+    //         .sortedBy { it.id.toInt() }
+    // }
 
     fun getChatData(): LiveData<List<ChatItem>> {
         val result = MediatorLiveData<List<ChatItem>>()
 
         val filterF = {
             val queryStr = query.value!!
-            val chats: MutableList<ChatItem> = mutableListOf()
-            if (!archiveChats.value.isNullOrEmpty()) {
-                chats.add(
-                    archiveChats.value!!.last().copy(
-                        chatType = ChatType.ARCHIVE,
-                        messageCount = archiveChats.value!!.sumBy { it.messageCount })
-                )
+
+            val (archived, unarchived) = this.chats.value!!.partition { it.isArchived }
+
+            val chatItems = (
+                    if (queryStr.isEmpty()) unarchived.map { it.toChatItem() }
+                    else unarchived.map { it.toChatItem() }.filter { it.title.contains(queryStr, true) })
+                .sortedBy { it.id.toInt() }
+                .toMutableList()
+
+            Chat.toArchiveChatItem(archived)?.let {
+                chatItems.add(0, it)
             }
-            chats.addAll(nonArchiveChats.value!!)
 
-            result.value = if (queryStr.isEmpty()) chats
-            else chats.filter { it.title.contains(queryStr, true) }
-    }
+            result.value = chatItems
+        }
 
-        result.addSource(nonArchiveChats) { filterF.invoke() }
-        result.addSource(query) { filterF.invoke() }
+        result.addSource(chats) { filterF.invoke(); }
+        result.addSource(query) { filterF.invoke(); }
 
         return result
     }
-
-    fun getArchiveData(): LiveData<List<ChatItem>> = archiveChats
 
     fun addToArchive(chatId: String) {
         val chat = chatRepository.find(chatId)
@@ -60,7 +60,7 @@ class MainViewModel : ViewModel() {
         chatRepository.update(chat.copy(isArchived = false))
     }
 
-    fun handleSearchQuery(text: String) {
+    fun handleSearchQuery(text: String?) {
         query.value = text
     }
 }

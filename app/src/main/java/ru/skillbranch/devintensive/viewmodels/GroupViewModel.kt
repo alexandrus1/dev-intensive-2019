@@ -1,5 +1,6 @@
 package ru.skillbranch.devintensive.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Transformations
@@ -29,8 +30,7 @@ class GroupViewModel : ViewModel() {
             val queryStr = query.value!!
             val users = userItems.value!!
 
-            result.value = if (queryStr.isEmpty()) users
-            else users.filter { it.fullName.contains(queryStr, true) }
+            result.value = if (queryStr.isEmpty()) users else users.filter { it.fullName.contains(queryStr, true) }
         }
 
         result.addSource(userItems) { filterF.invoke() }
@@ -43,16 +43,16 @@ class GroupViewModel : ViewModel() {
 
     fun handleSelectedItem(userId: String) {
         userItems.value = userItems.value!!.map {
-            if (it.id == userId) it.copy(isSelected = !it.isSelected)
+            if (it.id == userId)
+                it.copy(isSelected = !it.isSelected)
             else it
         }
     }
 
-    private fun loadUsers(): List<UserItem> = GroupRepository.loadUsers().map { it.toUserItem() }
-
     fun handleRemoveChip(userId: String) {
         userItems.value = userItems.value!!.map {
-            if (it.id == userId) it.copy(isSelected = false)
+            if (it.id == userId)
+                it.copy(isSelected = false)
             else it
         }
     }
@@ -64,4 +64,15 @@ class GroupViewModel : ViewModel() {
     fun handleCreateGroup() {
         groupRepository.createChat(selectedItems.value!!)
     }
+
+    // ~2:20:++ 5-го занятия
+    // придерживаемся структурного паттерна MVVM -
+    // все взаимодействия помещаем во вью модель, а слой представления (вью) отображает только изменения данных
+    // мы не делаем никакую логику, связанную с обработкой данных на слое представления
+    // и оттуда же мы не удаляем какие-то вью элементы
+    // все элементы подвязываем к нашим данным - если данные изменяются, должны изменяться и вью элементы
+    // вью модель должна по сути являться хэндлером всех взаимодействий пользователя
+    // т.е. если пользователь жмёт на какие-то элементы UI, они должны транслироваться во вью модель и изменять данные
+
+    private fun loadUsers(): List<UserItem> = groupRepository.loadUsers().map { it.toUserItem() }
 }

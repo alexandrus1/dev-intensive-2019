@@ -12,27 +12,30 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import kotlinx.android.synthetic.main.activity_profile.*
+import kotlinx.android.synthetic.main.activity_profile_constraint.*
 import ru.skillbranch.devintensive.R
 import ru.skillbranch.devintensive.models.Profile
 import ru.skillbranch.devintensive.utils.Utils
 import ru.skillbranch.devintensive.viewmodels.ProfileViewModel
 
+
 class ProfileActivity : AppCompatActivity() {
+
     companion object {
         const val IS_EDIT_MODE = "IS_EDIT_MODE"
     }
 
     private lateinit var viewModel: ProfileViewModel
-    private var isEditMode = false
+    var isEditMode = false
     private lateinit var viewFields: Map<String, TextView>
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme)
+        super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
         initViews(savedInstanceState)
         initViewModel()
+        Log.d("M_ProfileActivity", "OnCreate")
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -40,9 +43,30 @@ class ProfileActivity : AppCompatActivity() {
         outState?.putBoolean(IS_EDIT_MODE, isEditMode)
     }
 
+    private fun initViewModel() {
+        viewModel = ViewModelProviders.of(this).get(ProfileViewModel::class.java)
+        viewModel.getProfileData().observe(this, Observer { updateUI(it) })
+        viewModel.getTheme().observe(this, Observer { updateTheme(it) })
+    }
+
+    private fun updateTheme(mode: Int) {
+        Log.d("M_ProfileActivity", "updateTheme")
+        // при каждом вызове setLocalNightMode происходит пересоздание activity!
+        delegate.setLocalNightMode(mode)
+    }
+
+    private fun updateUI(profile: Profile) {
+        profile.toMap().also {
+            for ((k, v) in viewFields) {
+                v.text = it[k].toString()
+            }
+            iv_avatar.setDefaultAvatar(it["initials"].toString(), Utils.getThemeColor(R.attr.colorAccent, theme))
+        }
+    }
+
     private fun initViews(savedInstanceState: Bundle?) {
         viewFields = mapOf(
-            "nickName" to tv_nick_name,
+            "nickname" to tv_nick_name,
             "rank" to tv_rank,
             "firstName" to et_first_name,
             "lastName" to et_last_name,
@@ -56,57 +80,58 @@ class ProfileActivity : AppCompatActivity() {
         showCurrentMode(isEditMode)
 
         btn_edit.setOnClickListener {
-            if (isEditMode) saveProfileInfo()
-            isEditMode = !isEditMode
-            showCurrentMode(isEditMode)
-        }
-
-        btn_switch_theme.setOnClickListener {
-            viewModel.switchTheme()
+            if (isEditMode) {
+                if (!isRepositoryValid(et_repository.text.toString())) {
+                    et_repository.text?.clear()
+                }
+                saveProfileInfo()
+            }
+            switchMode()
         }
 
         et_repository.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (!Utils.validateURL(s)) {
-                    wr_repository.isErrorEnabled = true
-                    wr_repository.error = "Невалидный адрес репозитория"
-                } else {
+                if (isRepositoryValid(s.toString())) {
+                    wr_repository.error = null
                     wr_repository.isErrorEnabled = false
+                } else {
+                    wr_repository.error = "Невалидный адрес репозитория"
                 }
             }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
+
+        btn_switch_theme.setOnClickListener {
+            viewModel.switchTheme()
+        }
+    }
+
+    private fun switchMode() {
+        isEditMode = isEditMode.not()
+        showCurrentMode(isEditMode)
     }
 
     private fun showCurrentMode(isEdit: Boolean) {
-        val info = viewFields.filter {
-            setOf(
-                "firstName",
-                "lastName",
-                "about",
-                "repository"
-            ).contains(it.key)
-        }
+        val info = viewFields.filter { setOf("firstName", "lastName", "about", "repository").contains(it.key) }
         for ((_, v) in info) {
-            v.isEnabled = isEdit
+            v as EditText
             v.isFocusable = isEdit
             v.isFocusableInTouchMode = isEdit
-            v.background.alpha = if (isEdit) 255 else 0
+            v.isEnabled = isEdit
+            v.background.alpha = if (isEdit) 255 else 0 // прозрачность (255 - максимум прозрачности, 0 - непрозрачный)
         }
 
         ic_eye.visibility = if (isEdit) View.GONE else View.VISIBLE
-        wr_about.isCounterEnabled = isEdit
+        wr_about.isCounterEnabled = isEdit // подсветка количества введённых символов
+        wr_repository.isErrorEnabled = isEdit
 
         with(btn_edit) {
             val filter: ColorFilter? = if (isEdit) {
                 PorterDuffColorFilter(
                     Utils.getThemeColor(R.attr.colorAccent, theme),
-                    PorterDuff.Mode.SRC_IN
+                    PorterDuff.Mode.SRC_IN // режим наложения
                 )
             } else {
                 null
@@ -119,27 +144,33 @@ class ProfileActivity : AppCompatActivity() {
             }
 
             background.colorFilter = filter
-            setImageDrawable(icon)
+            setImageDrawable((icon))
         }
     }
 
-    private fun initViewModel() {
-        viewModel = ViewModelProviders.of(this).get(ProfileViewModel::class.java)
-        viewModel.getProfileData().observe(this, Observer { updateUI(it) })
-        viewModel.getTheme().observe(this, Observer { updateTheme(it) })
-    }
+    private fun isRepositoryValid(text: String): Boolean {
+        // a*a+a?	0 or more, 1 or more, 0 or 1
+        // .        any character except newline
+        // \w\d\s	word, digit, whitespace
+        // \W\D\S	not word, digit, whitespace
 
-    private fun updateTheme(mode: Int) {
-        Log.d("M_ProfileActivity", "updateTheme")
-        delegate.setLocalNightMode(mode)
-    }
+        val repository = text.trim().toLowerCase()
+        val userName = repository.substringAfterLast('/')
 
-    private fun updateUI(profile: Profile) {
-        profile.toMap().also {
-            for ((k, v) in viewFields) {
-                v.text = it[k].toString()
-            }
-            iv_avatar.setDefaultAvatar(it["initials"].toString(), Utils.getThemeColor(R.attr.colorAccent, theme))
+        val pattern = "^(https://)?(www.)?github.com/[\\w\\d-]+$"
+
+        val exclude = arrayOf(
+            "enterprise", "features", "topics", "collections", "trending", "events", "marketplace",
+            "pricing", "nonprofit", "customer-stories", "security", "login", "join"
+        )
+
+        return when {
+            repository.isEmpty() -> true
+            Regex(pattern).matches(repository).not() -> false
+            exclude.contains(userName) -> false
+            userName.contains(Regex("^a-zA-Z0-9-")) -> false
+            userName.startsWith("-") || userName.endsWith("-") -> false
+            else -> true
         }
     }
 
@@ -148,9 +179,13 @@ class ProfileActivity : AppCompatActivity() {
             firstName = et_first_name.text.toString(),
             lastName = et_last_name.text.toString(),
             about = et_about.text.toString(),
-            repository = if (wr_repository.isErrorEnabled) "" else et_repository.text.toString()
+            repository = et_repository.text.toString()
         ).apply {
             viewModel.saveProfileDate(this)
-        }
+        } // apply - для того, чтобы обратиться к только что созданному инстансу Profile
     }
+
+// мультиселект:
+// alt или колесо мыши + проведение вертикальной черты
+// ctrl + alt + shift -> клики мышкой по нужным позициям
 }

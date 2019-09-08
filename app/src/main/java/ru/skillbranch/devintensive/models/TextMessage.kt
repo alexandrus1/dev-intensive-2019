@@ -1,10 +1,10 @@
 package ru.skillbranch.devintensive.models
 
+import ru.skillbranch.devintensive.extensions.humanizeDiff
+import ru.skillbranch.devintensive.models.data.Chat
+import ru.skillbranch.devintensive.models.data.User
 import java.util.*
 import kotlin.math.min
-
-import ru.skillbranch.devintensive.extensions.humanizeDiff
-import ru.skillbranch.devintensive.models.data.*
 
 class TextMessage(
     id: String,
@@ -12,8 +12,8 @@ class TextMessage(
     chat: Chat,
     isIncoming: Boolean = false,
     date: Date = Date(),
-    isReaded:Boolean = false,
-    var text:String?
+    isReaded: Boolean = false,
+    var text: String?
 ) : BaseMessage(id, from, chat, isIncoming, date, isReaded) {
 
     companion object {
@@ -28,5 +28,5 @@ class TextMessage(
 
 
     override fun formatMessage(): String =
-        "id:$id ${from.firstName} ${if (isIncoming) "получил" else "отправил"} сообщение \"$text\" ${date.humanizeDiff()}"
+        "id:$id ${from.firstName} ${if (isIncoming) "РїРѕР»СѓС‡РёР»" else "РѕС‚РїСЂР°РІРёР»"} СЃРѕРѕР±С‰РµРЅРёРµ \"$text\" ${date.humanizeDiff()}"
 }

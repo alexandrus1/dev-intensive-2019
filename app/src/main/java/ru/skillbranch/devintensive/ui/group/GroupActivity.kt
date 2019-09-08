@@ -21,7 +21,6 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.chip.Chip
 import kotlinx.android.synthetic.main.activity_group.*
-
 import ru.skillbranch.devintensive.R
 import ru.skillbranch.devintensive.models.data.UserItem
 import ru.skillbranch.devintensive.ui.adapters.UserAdapter
@@ -30,6 +29,7 @@ import ru.skillbranch.devintensive.viewmodels.GroupViewModel
 import ru.skillbranch.devintensive.viewmodels.ProfileViewModel
 
 class GroupActivity : AppCompatActivity() {
+
     private lateinit var userAdapter: UserAdapter
     private lateinit var viewModel: GroupViewModel
 
@@ -67,10 +67,10 @@ class GroupActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return when (item?.itemId) {
             android.R.id.home -> {
-            finish()
+                finish()
                 // анимация переходов между активностями реализована также через стиль ActivityTransitions
-            overridePendingTransition(R.anim.idle, R.anim.bottom_down)
-            true
+                overridePendingTransition(R.anim.idle, R.anim.bottom_down)
+                true
             }
             else -> super.onOptionsItemSelected(item)
         }
@@ -111,8 +111,7 @@ class GroupActivity : AppCompatActivity() {
     }
 
     private fun toggleFab(isShow: Boolean) {
-        if(isShow) fab.show()
-        else fab.hide()
+        if (isShow) fab.show() else fab.hide()
     }
 
     // ...2:57:50 5-го занятия это относится к слою представления, потому что нам неоходимо их адресовать

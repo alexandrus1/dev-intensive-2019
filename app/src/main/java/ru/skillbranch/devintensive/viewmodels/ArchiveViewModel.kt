@@ -6,14 +6,15 @@ import androidx.lifecycle.ViewModel
 import ru.skillbranch.devintensive.models.data.ChatItem
 import ru.skillbranch.devintensive.repositories.ChatRepository
 
-class ArchiveViewModel : ViewModel() {
+class ArchiveViewModel: ViewModel() {
     private val chatRepository = ChatRepository
-    private val archiveChats = Transformations.map(chatRepository.loadChats()) { chats ->
+
+    private val archiveItems = Transformations.map(chatRepository.loadChats()) { chats ->
         return@map chats.filter { it.isArchived }
             .map { it.toChatItem() }
     }
 
-    fun getChatData(): LiveData<List<ChatItem>> = archiveChats
+    fun getArchiveData(): LiveData<List<ChatItem>> = archiveItems
 
     fun addToArchive(chatId: String) {
         val chat = chatRepository.find(chatId)
