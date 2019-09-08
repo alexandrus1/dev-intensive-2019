@@ -1,8 +1,4 @@
 <resources>
-    <!-- Splash screen theme -->
-    <style name="SplashTheme">
-        <item name="android:windowBackground">@drawable/splash</item>
-    </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar"/>
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light"/>
@@ -12,6 +8,39 @@
         <item name="android:activityOpenExitAnimation">@anim/idle</item>
         <item name="android:activityCloseEnterAnimation">@anim/idle</item>
         <item name="android:activityCloseExitAnimation">@anim/bottom_down</item>
+    </style>
+
+    <style name="ItemChat"/>
+
+    <style name="ItemChat.Avatar" parent="ItemChat">
+        <item name="cv_borderWidth">0dp</item>
+        <item name="cv_textSize">18sp</item>
+    </style>
+
+    <style name="ItemChat.Layout" parent="ItemChat">
+        <item name="android:background">?attr/colorItem</item>
+        <item name="android:padding">@dimen/spacing_normal_16</item>
+    </style>
+
+    <style name="ItemChat.TextView" parent="ItemChat">
+        <item name="android:textSize">14sp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    
+    <style name="ItemChat.TextView.Title" parent="ItemChat.TextView">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">?attr/colorTextItemTitle</item>
+    </style>
+
+    <style name="ItemChat.TextView.Author" parent="ItemChat.TextView">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">?attr/colorTextItemTitle</item>
+    </style>
+
+    <style name="ItemChat.TextView.Description" parent="ItemChat.TextView">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">?attr/colorTextItemDescription</item>
     </style>
 
     <style name="Profile">
@@ -30,7 +59,7 @@
         <item name="android:singleLine">true</item>
     </style>
 
-    <style name="Profile.EditText.MultiLine" parent="Profile.EditText">
+    <style name="Profile.EditText.Multiline" parent="Profile.EditText">
         <item name="android:inputType">textMultiLine</item>
         <item name="android:maxLength">128</item>
     </style>
@@ -41,7 +70,7 @@
 
     <style name="Profile.Header.Nickname" parent="Profile.Header">
         <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textSize">@dimen/font_large_20</item>
+        <item name="android:textSize">@dimen/font_large_18</item>
         <item name="android:layout_marginTop">@dimen/spacing_normal_16</item>
     </style>
 
@@ -58,8 +87,16 @@
     </style>
 
     <style name="Profile.Metrics.Value" parent="Profile.Metrics">
-        <item name="android:drawablePadding">4dp</item>
+        <item name="android:drawablePadding">@dimen/spacing_tiny_4</item>
         <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textSize">@dimen/font_large_20</item>
+        <item name="android:textSize">@dimen/font_large_18</item>
     </style>
-    </resources>
+
+    <style name="Profile.InfoItem">
+        <item name="android:paddingTop">@dimen/spacing_normal_16</item>
+        <item name="android:paddingBottom">5dp</item>
+        <item name="android:paddingLeft">@dimen/spacing_normal_16</item>
+        <item name="android:paddingRight">@dimen/spacing_normal_16</item>
+        <item name="android:minHeight">72dp</item>
+    </style>
+</resources>

@@ -4,7 +4,6 @@ import androidx.lifecycle.MutableLiveData
 import ru.skillbranch.devintensive.extensions.mutableLiveData
 import ru.skillbranch.devintensive.models.data.Chat
 import ru.skillbranch.devintensive.models.data.User
-import ru.skillbranch.devintensive.models.data.UserItem
 import ru.skillbranch.devintensive.utils.DataGenerator
 
 object CacheManager {
@@ -19,7 +18,12 @@ object CacheManager {
         return users.value!!.filter { ids.contains(it.id) }
     }
 
-    fun nextChatId(): String = "${chats.value!!.size}"
+    fun nextChatId(): String {
+        // return "${chats.value!!.size}"
+        // Идентификатор нового чата должен задаваться как инкремент от последнего идентификатора в списке чатов
+        val lastId = chats.value!!.last().id.toInt() + 1
+        return lastId.toString()
+    }
 
     fun insertChat(chat: Chat) {
         val copy = chats.value!!.toMutableList()

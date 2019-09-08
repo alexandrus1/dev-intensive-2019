@@ -1,24 +1,21 @@
 package ru.skillbranch.devintensive.ui.profile
 
-import android.graphics.ColorFilter
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
+import android.graphics.*
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.activity_profile.*
 import ru.skillbranch.devintensive.R
-import ru.skillbranch.devintensive.extensions.getColorAccent
-import ru.skillbranch.devintensive.extensions.getTextAvatar
 import ru.skillbranch.devintensive.models.Profile
-import ru.skillbranch.devintensive.utils.Utils.toInitials
-import ru.skillbranch.devintensive.utils.Utils.validateURL
+import ru.skillbranch.devintensive.utils.Utils
 import ru.skillbranch.devintensive.viewmodels.ProfileViewModel
 
 class ProfileActivity : AppCompatActivity() {
@@ -76,7 +73,7 @@ class ProfileActivity : AppCompatActivity() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (!validateURL(s)) {
+                if (!Utils.validateURL(s)) {
                     wr_repository.isErrorEnabled = true
                     wr_repository.error = "Невалидный адрес репозитория"
                 } else {
@@ -87,7 +84,14 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun showCurrentMode(isEdit: Boolean) {
-        val info = viewFields.filter { setOf("firstName", "lastName", "about", "repository").contains(it.key) }
+        val info = viewFields.filter {
+            setOf(
+                "firstName",
+                "lastName",
+                "about",
+                "repository"
+            ).contains(it.key)
+        }
         for ((_, v) in info) {
             v.isEnabled = isEdit
             v.isFocusable = isEdit
@@ -100,8 +104,10 @@ class ProfileActivity : AppCompatActivity() {
 
         with(btn_edit) {
             val filter: ColorFilter? = if (isEdit) {
-                val color = getColorAccent()
-                PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
+                PorterDuffColorFilter(
+                    Utils.getThemeColor(R.attr.colorAccent, theme),
+                    PorterDuff.Mode.SRC_IN
+                )
             } else {
                 null
             }
@@ -133,13 +139,8 @@ class ProfileActivity : AppCompatActivity() {
             for ((k, v) in viewFields) {
                 v.text = it[k].toString()
             }
+            iv_avatar.setDefaultAvatar(it["initials"].toString(), Utils.getThemeColor(R.attr.colorAccent, theme))
         }
-        updateAvatar(profile)
-    }
-
-    private fun updateAvatar(profile: Profile) {
-        toInitials(profile.firstName, profile.lastName)?.let { iv_avatar.setImageDrawable(getTextAvatar(it)) }
-            ?: iv_avatar.setImageResource(R.drawable.avatar_default)
     }
 
     private fun saveProfileInfo() {
@@ -149,7 +150,7 @@ class ProfileActivity : AppCompatActivity() {
             about = et_about.text.toString(),
             repository = if (wr_repository.isErrorEnabled) "" else et_repository.text.toString()
         ).apply {
-            viewModel.saveProfileData(this)
+            viewModel.saveProfileDate(this)
         }
     }
 }

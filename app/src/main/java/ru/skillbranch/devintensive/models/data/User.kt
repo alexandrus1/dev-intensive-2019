@@ -12,19 +12,19 @@ data class User(
     var avatar: String?,
     var rating: Int = 0,
     var respect: Int = 0,
-    val lastVisit: Date? = null,
+    val lastVisit: Date? = Date(),
     val isOnline: Boolean = false
 ) {
+
     fun toUserItem(): UserItem {
         val lastActivity = when {
-            (lastVisit == null) -> "Еще не разу не заходил"
+            lastVisit == null -> "Ещё ни разу не заходил"
             isOnline -> "online"
             else -> "Последний раз был ${lastVisit.humanizeDiff()}"
         }
-
         return UserItem(
             id,
-            fullName(),
+            "${firstName.orEmpty()} ${lastName.orEmpty()}",
             Utils.toInitials(firstName, lastName),
             avatar,
             lastActivity,
@@ -42,37 +42,6 @@ data class User(
 
     constructor(id: String) : this(id, "John", "Doe")
 
-    data class Builder(
-        var id: String = "",
-        var firstName: String? = null,
-        var lastName: String? = null,
-        var avatar: String? = null,
-        var rating: Int = 0,
-        var respect: Int = 0,
-        var lastVisit: Date? = Date(),
-        var isOnline: Boolean = false
-    ) {
-        fun id(id: String) = apply { this.id = id }
-        fun firstName(firstName: String?) = apply { this.firstName = firstName }
-        fun lastName(lastName: String?) = apply { this.lastName = lastName }
-        fun avatar(avatar: String?) = apply { this.avatar = avatar }
-        fun rating(rating: Int) = apply { this.rating = rating }
-        fun respect(respect: Int) = apply { this.respect = respect }
-        fun lastVisit(lastVisit: Date?) = apply { this.lastVisit = lastVisit }
-        fun isOnline(isOnline: Boolean) = apply { this.isOnline = isOnline }
-        fun build() = User(
-            id,
-            firstName,
-            lastName,
-            avatar,
-            rating,
-            respect,
-            lastVisit,
-            isOnline
-        )
-    }
-
-    // factory - generate User object
     companion object Factory {
         private var lastId: Int = -1
         fun makeUser(fullName: String?): User {
@@ -83,6 +52,55 @@ data class User(
                 id = "$lastId",
                 firstName = firstName,
                 lastName = lastName
+            )
+        }
+    }
+
+    fun printMe() = println("""
+        id: $id
+        firstName: $firstName
+        lastName: $lastName
+        avatar: $avatar
+        rating: $rating
+        respect: $respect
+        lastVisit: $lastVisit
+        isOnline: $isOnline
+    """.trimIndent())
+
+    class Builder() {
+        companion object Builder {
+            private var nextId: Int = 0
+        }
+
+        private var id: String = "$nextId"
+        private var firstName: String? = null
+        private var lastName: String? = null
+        private var avatar: String? = null
+        private var rating: Int = 0
+        private var respect: Int = 0
+        private var lastVisit: Date? = Date()
+        private var isOnline: Boolean = false
+
+        fun id(value: String) = apply { id = value }
+        fun firstName(value: String?) = apply { firstName = value }
+        fun lastName(value: String?) = apply { lastName = value }
+        fun avatar(value: String?) = apply { avatar = value }
+        fun rating(value: Int) = apply { rating = value }
+        fun respect(value: Int) = apply { respect = value }
+        fun lastVisit(value: Date?) = apply { lastVisit = value }
+        fun isOnline(value: Boolean) = apply { isOnline = value }
+
+        fun build(): User {
+            if (id.toIntOrNull() != null) nextId = id.toInt()+1
+            return User(
+                id,
+                firstName,
+                lastName,
+                avatar,
+                rating,
+                respect,
+                lastVisit,
+                isOnline
             )
         }
     }

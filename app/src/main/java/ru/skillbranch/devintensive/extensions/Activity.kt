@@ -30,7 +30,7 @@ fun Activity.isKeyboardOpen(): Boolean {
     val visibleBounds = Rect()
     rootView.getWindowVisibleDisplayFrame(visibleBounds)
     val heightDiff = rootView.height - visibleBounds.height()
-    val marginOfError = this.convertDpToPx(50F).roundToLong()
+    val marginOfError = 50.dpToPx()
     return heightDiff > marginOfError
 }
 

@@ -15,6 +15,14 @@ class GroupViewModel : ViewModel() {
     private val selectedItems = Transformations.map(userItems) { users -> users.filter { it.isSelected } }
 
     fun getUsersData(): LiveData<List<UserItem>> {
+        // 2:38:40 5-го занятия
+        // MediatorLiveData - класс, который способен получать на вход большое количество источников и может
+        // подписаться на их изменения
+        // например, есть несколько LiveData, которые могут изменяться и нам нужно какое-то одно результирующее значение,
+        // которое будет обрабатывать изменение каждой из этих LiveData
+        // Сейчас нам необходимо обрабатывать изменения Query запроса и изменения UserItems, которые были выбраны
+        // в addSource указываем, на какие данные необходимо подписаться MediatorLiveData и вторым аргументом передаём
+        // лямбду, которая будет вызываться каждый раз, когда эти данные будут изменены (по сути - это метод OnChange)
         val result = MediatorLiveData<List<UserItem>>()
 
         val filterF = {
@@ -49,7 +57,7 @@ class GroupViewModel : ViewModel() {
         }
     }
 
-    fun handleSearchQuery(text: String) {
+    fun handleSearchQuery(text: String?) {
         query.value = text
     }
 

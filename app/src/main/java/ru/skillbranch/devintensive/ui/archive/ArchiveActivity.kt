@@ -45,11 +45,11 @@ class ArchiveActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        chatAdapter = ChatAdapter {
-            Snackbar.make(rv_archive_list, "Click on ${it.title}", Snackbar.LENGTH_LONG).show()
+        chatAdapter = ChatAdapter { item, pos ->
+            Snackbar.make(rv_archive_list, "click on ${item.title}, position $pos", Snackbar.LENGTH_LONG).show()
         }
         val divider = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
-        val touchCallback = ChatItemTouchHelperCallback(chatAdapter) {
+        val touchCallback = ChatItemTouchHelperCallback(chatAdapter, R.drawable.ic_unarchive_white_24dp, theme) {
             val item = it
             viewModel.restoreFromArchive(item.id)
             val snackbar =

@@ -1,5 +1,6 @@
 package ru.skillbranch.devintensive.ui.adapters
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -55,7 +56,7 @@ class UserAdapter(val listener: (UserItem) -> Unit) : RecyclerView.Adapter<UserA
                     .into(iv_avatar_user)
             } else {
                 Glide.with(itemView).clear(iv_avatar_user)
-                iv_avatar_user.setInitials(user.initials ?: "??")
+                iv_avatar_user.setDefaultAvatar(user.initials ?: "??", Color.LTGRAY)
             }
 
             sv_indicator.visibility = if (user.isOnline) View.VISIBLE else View.GONE
