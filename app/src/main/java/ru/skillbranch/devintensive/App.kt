@@ -18,6 +18,8 @@ class App: Application(){
         instance = this
     }
 
+    // ATTN:
+    // onCreate is not always the first method to be called
     override fun onCreate() {
         super.onCreate()
         PreferencesRepository.getAppTheme().also {

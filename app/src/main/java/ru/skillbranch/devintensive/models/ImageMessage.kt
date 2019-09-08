@@ -1,12 +1,10 @@
 package ru.skillbranch.devintensive.models
 
-import ru.skillbranch.devintensive.models.data.Chat
-import ru.skillbranch.devintensive.models.data.User
 import java.util.*
 
-/**
- * Created by Makweb on 24.06.2019.
- */
+import ru.skillbranch.devintensive.extensions.humanizeDiff
+import ru.skillbranch.devintensive.models.data.*
+
 class ImageMessage(
     id: String,
     from: User,
@@ -14,5 +12,11 @@ class ImageMessage(
     isIncoming: Boolean = false,
     date: Date = Date(),
     isReaded:Boolean = false,
-    var image:String
-) : BaseMessage(id, from, chat, isIncoming, date,isReaded)
+    var image: String?
+) : BaseMessage(id, from, chat, isIncoming, date, isReaded) {
+
+    override fun shortMessage(): String = "${from.firstName} - отправил фото"
+
+    override fun formatMessage(): String =
+        "id:$id ${from.firstName} ${if (isIncoming) "получил" else "отправил"} изображение \"$image\" ${date.humanizeDiff()}"
+}

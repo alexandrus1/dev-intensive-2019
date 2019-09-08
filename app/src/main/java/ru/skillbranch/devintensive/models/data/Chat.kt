@@ -19,13 +19,15 @@ data class Chat(
     fun unreadableMessageCount(): Int = messages.count { !it.isReaded }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    fun lastMessageDate(): Date? = messages.lastOrNull()?.date
+    fun lastMessageDate(): Date? {
+        return if (messages.isEmpty()) null else messages.last().date
+    }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    fun lastMessageShort(): Pair<String, String?> = when (val lastMessage = messages.lastOrNull()) {
-        is TextMessage -> (lastMessage.text ?: "") to lastMessage.from.firstName
-        is ImageMessage -> "${lastMessage.from.firstName} - отправил фото" to lastMessage.from.firstName
-        else -> "Неподдерживаемый тип сообщения" to lastMessage?.from?.firstName
+    fun lastMessageShort(): Pair<String, String?> {
+        if (messages.isEmpty()) return "Сообщений ещё нет" to null
+        val lastMessage = messages.last()
+        return lastMessage.shortMessage() to "${lastMessage.from.firstName}"
     }
 
     private fun isSingle(): Boolean = members.size == 1
